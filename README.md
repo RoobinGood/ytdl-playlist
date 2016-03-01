@@ -7,9 +7,11 @@ node app.js url [options]
 
 # Options
 
---folder 			- destination folder (default: ./)
---start-index, -s 	- starting index in playlist (default: 1)
---timeout, -t 		- timeout between starting downloads in seconds (default: 5)
+```--folder``` 				- destination folder (default: ./)
+
+```--start-index, -s``` 	- starting index in playlist (default: 1)
+
+```--timeout, -t``` 		- timeout between starting downloads in seconds (default: 5)
 
 
 # Example 
