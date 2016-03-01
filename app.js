@@ -9,11 +9,12 @@ var downloadVideo = function(url, name) {
 
 var getPlaylist = function(listUrl, folder) {
 	request.get(listUrl, function(err, res, body) {
-		// console.log(body.substr(0, 1000));
-		body.match(/pl-video-title-link.*data/g).forEach(function(link, i) {
+		videoList = [];
+		body.replace(/\">\n/g, '\"">').match(/pl-video-title-link.*/g).forEach(function(link, i) {
+			var title = link.match(/>.*/)[0].replace('>', '').trim();
 
-			var url = 'https://www.youtube.com' + link.match(/href=".*"/)[0]
-				.replace('href=\"', '').replace('"', '').replace(/&amp;/g, '&');
+			var url = 'https://www.youtube.com' + link.match(/href=".*" data/)[0]
+				.replace('href=\"', '').replace('" data', '').replace(/&amp;/g, '&');
 
 			var list = url.match(/&list=.*/)[0];
 			url = url.replace(list, '');
@@ -22,11 +23,23 @@ var getPlaylist = function(listUrl, folder) {
 			url = url.replace(index, '');
 
 			url = url + list + index;
+
+			var name = folder + String(i+1) + ' - ' + title + '.flv';
 			
-			var name = folder + String(i+1) + '.flv';
+			// console.log(list, "'" + title + "'", "'" + url + "'");
 
 			console.log(url, name);
-			downloadVideo(url, name);
+			// downloadVideo(url, name);
+			videoList.push({
+				url: url,
+				name: name
+			});
+		});
+
+		videoList.forEach(function(item, i) {
+			setTimeout(function() {
+				downloadVideo(item.url, item.name);
+			}, i*1000*5);
 		});
 	});
 };
