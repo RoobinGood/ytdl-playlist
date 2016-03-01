@@ -9,7 +9,7 @@ var downloadVideo = function(url, name) {
 	ytdl(url).pipe(fs.createWriteStream(name));
 }
 
-var getPlaylist = function(listUrl, folder) {
+var getPlaylist = function(listUrl, params) {
 	request.get(listUrl, function(err, res, body) {
 		if (err) {
 			console.err('Error: ', + err);
@@ -28,7 +28,7 @@ var getPlaylist = function(listUrl, folder) {
 
 						var padLength = String(list.length).length;
 						var index = (Array(padLength).join('0') + (i+1)).slice(-padLength);
-						var name = index + '. ' + node.children[0].raw.trim() + '.flv';
+						var name = params.folder + index + '. ' + node.children[0].raw.trim() + '.flv';
 
 						videoList.push({
 							url: url,
@@ -42,22 +42,31 @@ var getPlaylist = function(listUrl, folder) {
 			var parser = new htmlparser.Parser(handler);
 			parser.parseComplete(body);
 
-			videoList.forEach(function(item, i) {
+			videoList.filter(function(item, i) {
+				return i >= params.startIndex -1;
+			}).forEach(function(item, i) {
 				setTimeout(function() {
 					console.log(item.url, item.name);
 					downloadVideo(item.url, item.name);
-				}, i*1000*5);
+				}, i*1000*params.timeout);
 			});
 		}
 	});
 };
 
+
 var listUrls = argv._;
-var folder = argv.folder || './';
+var params = {
+	folder: argv.folder || './',
+	startIndex: argv.startIndex || argv.s || 1,
+	timeout: argv.timeout || argv.t || 5,
+}
+
+var startIndex = argv.s || 1;
 if (listUrls.length > 0) {
 	listUrls.forEach(function(listUrl) {
 		console.log(listUrl);
-		getPlaylist(listUrl, folder);
+		getPlaylist(listUrl, params);
 	});
 } else {
 	console.warn('There are no link :\'(');
