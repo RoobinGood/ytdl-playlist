@@ -4,9 +4,24 @@ var request = require('request');
 var argv = require('optimist').argv;
 var select = require('soupselect').select;
 var htmlparser = require('htmlparser');
+var _ = require('underscore');
 
-var downloadVideo = function(url, name) {
-	ytdl(url).pipe(fs.createWriteStream(name));
+var downloadVideo = function(params, callback) {
+	console.log('downloadVideo', params.name);
+	ytdl(params.url)
+		.pipe(fs.createWriteStream(params.name))
+		.on('finish', callback);
+}
+
+var downloadVideoList = function(params, callback) {
+	var currentVideo = _(params.videoList).first();
+	if (currentVideo) {
+		downloadVideo(currentVideo, function() {
+			downloadVideoList({videoList: _(params.videoList).tail()});
+		});
+	} else {
+		callback();
+	}
 }
 
 var getPlaylist = function(listUrl, params) {
@@ -42,13 +57,12 @@ var getPlaylist = function(listUrl, params) {
 			var parser = new htmlparser.Parser(handler);
 			parser.parseComplete(body);
 
-			videoList.filter(function(item, i) {
+			videoList = videoList.filter(function(item, i) {
 				return i >= params.startIndex -1;
-			}).forEach(function(item, i) {
-				setTimeout(function() {
-					console.log(item.url, item.name);
-					downloadVideo(item.url, item.name);
-				}, i*1000*params.timeout);
+			});
+
+			downloadVideoList({videoList: videoList}, function() {
+				console.log('download complete');
 			});
 		}
 	});
@@ -58,8 +72,7 @@ var getPlaylist = function(listUrl, params) {
 var listUrls = argv._;
 var params = {
 	folder: argv.folder || './',
-	startIndex: argv.startIndex || argv.s || 1,
-	timeout: argv.timeout || argv.t || 5,
+	startIndex: argv.startIndex || argv.s || 1
 }
 
 var startIndex = argv.s || 1;
