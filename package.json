@@ -9,8 +9,11 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "optimist": "^0.6.1",
-    "request": "^2.69.0",
-    "ytdl-core": "^0.7.10"
+    "htmlparser": "1.7.7",
+    "jquery": "^2.2.1",
+    "optimist": "0.6.1",
+    "request": "2.69.0",
+    "soupselect": "^0.2.0",
+    "ytdl-core": "0.7.10"
   }
 }
