@@ -2,6 +2,8 @@ var fs = require('fs');
 var ytdl = require('ytdl-core');
 var request = require('request');
 var argv = require('optimist').argv;
+var select = require('soupselect').select;
+var htmlparser = require('htmlparser');
 
 var downloadVideo = function(url, name) {
 	ytdl(url).pipe(fs.createWriteStream(name));
@@ -9,43 +11,49 @@ var downloadVideo = function(url, name) {
 
 var getPlaylist = function(listUrl, folder) {
 	request.get(listUrl, function(err, res, body) {
-		videoList = [];
-		body.replace(/\">\n/g, '\"">').match(/pl-video-title-link.*/g).forEach(function(link, i) {
-			var title = link.match(/>.*/)[0].replace('>', '').trim();
+		if (err) {
+			console.err('Error: ', + err);
+			throw err;
+		} else {
+			var handler = new htmlparser.DefaultHandler(function(err, dom) {
+				if (err) {
+					console.err('Error: ', + err);
+					throw err;
+				} else {
+					var list = select(dom, '.pl-video-title-link');
 
-			var url = 'https://www.youtube.com' + link.match(/href=".*" data/)[0]
-				.replace('href=\"', '').replace('" data', '').replace(/&amp;/g, '&');
+					list.forEach(function(node, i) {
+						var url = 'https://www.youtube.com' +
+							node.attribs.href.replace(/&amp;/g, '&');
 
-			var list = url.match(/&list=.*/)[0];
-			url = url.replace(list, '');
+						var padLength = String(list.length).length;
+						var index = (Array(padLength).join('0') + (i+1)).slice(-padLength);
+						var name = index + '. ' + node.children[0].raw.trim() + '.flv';
 
-			var index = url.match(/&index=.*/)[0];
-			url = url.replace(index, '');
-
-			url = url + list + index;
-
-			var name = folder + String(i+1) + ' - ' + title + '.flv';
-			
-			// console.log(list, "'" + title + "'", "'" + url + "'");
-
-			console.log(url, name);
-			// downloadVideo(url, name);
-			videoList.push({
-				url: url,
-				name: name
+						videoList.push({
+							url: url,
+							name: name
+						});
+					});
+				}
 			});
-		});
 
-		videoList.forEach(function(item, i) {
-			setTimeout(function() {
-				downloadVideo(item.url, item.name);
-			}, i*1000*5);
-		});
+			var videoList = [];
+			var parser = new htmlparser.Parser(handler);
+			parser.parseComplete(body);
+
+			videoList.forEach(function(item, i) {
+				setTimeout(function() {
+					console.log(item.url, item.name);
+					downloadVideo(item.url, item.name);
+				}, i*1000*5);
+			});
+		}
 	});
 };
 
 var listUrls = argv._;
-var folder = argv.folder;
+var folder = argv.folder || './';
 if (listUrls.length > 0) {
 	listUrls.forEach(function(listUrl) {
 		console.log(listUrl);
