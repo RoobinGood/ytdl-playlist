@@ -41,7 +41,7 @@ var getPlaylist = function(listUrl, params) {
 
 						var padLength = String(list.length).length;
 						var index = (Array(padLength).join('0') + (i+1)).slice(-padLength);
-						var name = params.folder + index + '. ' + node.children[0].raw.trim() + '.flv';
+						var name = params.folder + '/' + index + '. ' + node.children[0].raw.trim() + '.flv';
 
 						videoList.push({
 							url: url,
@@ -106,11 +106,34 @@ var params = {
 	streamsCount: argv.streams || argv.s || 1
 }
 
-if (listUrls.length > 0) {
-	listUrls.forEach(function(listUrl) {
-		console.log(listUrl);
-		getPlaylist(listUrl, params);
-	});
-} else {
-	console.warn('There are no link :\'(');
+fs.stat(params.folder, function(err, stats) {
+	if (err) {
+		if (err.code = 'ENOENT') {
+			console.log('folder not exist, trying to create...');
+			fs.mkdir(params.folder, 0777, function(err) {
+				if (err) throw err;
+				console.log('successfully create');
+				work();
+			});
+		} else {
+			throw err;
+		}
+	} else {
+		if (stats.isDirectory()) {
+			work();
+		} else {
+			throw new Error(folder + ' it is not a directory');
+		}
+	}
+});
+
+var work = function() {
+	if (listUrls.length > 0) {
+		listUrls.forEach(function(listUrl) {
+			console.log(listUrl);
+			getPlaylist(listUrl, params);
+		});
+	} else {
+		console.warn('There are no link :\'(');
+	}
 }
