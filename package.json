@@ -9,6 +9,7 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "anticipant": "^0.1.0",
     "htmlparser": "1.7.7",
     "optimist": "0.6.1",
     "request": "2.69.0",

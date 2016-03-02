@@ -2,26 +2,22 @@ var fs = require('fs');
 var ytdl = require('ytdl-core');
 var request = require('request');
 var argv = require('optimist').argv;
+var Anticipant = require('anticipant');
 var select = require('soupselect').select;
 var htmlparser = require('htmlparser');
 var _ = require('underscore');
 
 var downloadVideo = function(params, callback) {
-	console.log('downloadVideo', params.name);
+	console.log(params.workerName, 'download video', params.name);
+
 	ytdl(params.url)
 		.pipe(fs.createWriteStream(params.name))
 		.on('finish', callback);
-}
 
-var downloadVideoList = function(params, callback) {
-	var currentVideo = _(params.videoList).first();
-	if (currentVideo) {
-		downloadVideo(currentVideo, function() {
-			downloadVideoList({videoList: _(params.videoList).tail()});
-		});
-	} else {
+	// test
+	/*setTimeout(function() {
 		callback();
-	}
+	}, Math.ceil(Math.random()*30));*/
 }
 
 var getPlaylist = function(listUrl, params) {
@@ -57,13 +53,45 @@ var getPlaylist = function(listUrl, params) {
 			var parser = new htmlparser.Parser(handler);
 			parser.parseComplete(body);
 
+
 			videoList = videoList.filter(function(item, i) {
 				return i >= params.startIndex -1;
 			});
 
-			downloadVideoList({videoList: videoList}, function() {
-				console.log('download complete');
+			var worker = function(workerName, onFinish) {
+				var currentVideo = videoList.shift();
+
+				if (currentVideo) {
+					currentVideo.workerName = workerName;
+					downloadVideo(currentVideo,
+						function() {
+							worker(workerName, onFinish);
+						}
+					);
+				} else {
+					onFinish();
+				}
+			};
+
+			var workersAnticipant = Anticipant.create(['runDownload'],
+				function() {
+					console.log('download complete');
+				}
+			);
+
+			console.log(_.range(params.streamsCount));
+			_(_.range(params.streamsCount)).each(function(i) {
+				var workerName = 'stream' + (i+1);
+				workersAnticipant.register(workerName);
+
+				worker(workerName,
+					function() {
+						workersAnticipant.perform(workerName);
+					}
+				);
 			});
+
+			workersAnticipant.perform('runDownload');
 		}
 	});
 };
@@ -72,7 +100,8 @@ var getPlaylist = function(listUrl, params) {
 var listUrls = argv._;
 var params = {
 	folder: argv.folder || './',
-	startIndex: argv.startIndex || argv.s || 1
+	startIndex: argv['start-index'] || argv.s || 1,
+	streamsCount: argv.streams || argv.n || 1
 }
 
 var startIndex = argv.s || 1;

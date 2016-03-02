@@ -11,6 +11,8 @@ node app.js url [options]
 
 ```--start-index, -s``` 	- starting index in playlist (default: 1)
 
+```--streams, -n``` 	- number of download streams (default: 1)
+
 
 
 # Example 
