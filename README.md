@@ -9,9 +9,9 @@ node app.js url [options]
 
 ```--dst, -d``` 				- destination folder (default: ./)
 
-```--first-index, -f``` 	- starting index in playlist (default: 1)
+```--first-index, -f``` 	- index of first video to download (default: 1)
 
-```--last-index, -l``` 	- starting index in playlist (default: 1)
+```--last-index, -l``` 	- index of last video to download (default: last index in playlist)
 
 ```--streams, -s``` 	- number of download streams (default: 1)
 

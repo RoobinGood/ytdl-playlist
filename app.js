@@ -81,7 +81,7 @@ var getPlaylist = function(listUrl, params) {
 				}
 			);
 
-			_(_.range(params.streamsCount)).each(function(i) {
+			_(params.streamsCount).times(function(i) {
 				var workerName = 'stream' + (i+1);
 				workersAnticipant.register(workerName);
 
