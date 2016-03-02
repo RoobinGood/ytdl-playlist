@@ -26,6 +26,8 @@ var getPlaylist = function(listUrl, params) {
 			console.err('Error: ', + err);
 			throw err;
 		} else {
+			var videoList = [];
+
 			var handler = new htmlparser.DefaultHandler(function(err, dom) {
 				if (err) {
 					console.err('Error: ', + err);
@@ -49,13 +51,13 @@ var getPlaylist = function(listUrl, params) {
 				}
 			});
 
-			var videoList = [];
 			var parser = new htmlparser.Parser(handler);
 			parser.parseComplete(body);
 
-
+			params.lastIndex = params.lastIndex || videoList.length;
 			videoList = videoList.filter(function(item, i) {
-				return i >= params.startIndex -1;
+				return (i >= params.firstIndex -1) &&
+					(i < params.lastIndex);
 			});
 
 			var worker = function(workerName, onFinish) {
@@ -79,7 +81,6 @@ var getPlaylist = function(listUrl, params) {
 				}
 			);
 
-			console.log(_.range(params.streamsCount));
 			_(_.range(params.streamsCount)).each(function(i) {
 				var workerName = 'stream' + (i+1);
 				workersAnticipant.register(workerName);
@@ -99,12 +100,12 @@ var getPlaylist = function(listUrl, params) {
 
 var listUrls = argv._;
 var params = {
-	folder: argv.folder || './',
-	startIndex: argv['start-index'] || argv.s || 1,
-	streamsCount: argv.streams || argv.n || 1
+	folder: argv.dst || argv.d || './',
+	firstIndex: argv['first-index'] || argv.f || 1,
+	lastIndex: argv['last-index'] || argv.l || undefined,
+	streamsCount: argv.streams || argv.s || 1
 }
 
-var startIndex = argv.s || 1;
 if (listUrls.length > 0) {
 	listUrls.forEach(function(listUrl) {
 		console.log(listUrl);

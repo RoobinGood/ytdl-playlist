@@ -7,11 +7,13 @@ node app.js url [options]
 
 # Options
 
-```--folder``` 				- destination folder (default: ./)
+```--dst, -d``` 				- destination folder (default: ./)
 
-```--start-index, -s``` 	- starting index in playlist (default: 1)
+```--first-index, -f``` 	- starting index in playlist (default: 1)
 
-```--streams, -n``` 	- number of download streams (default: 1)
+```--last-index, -l``` 	- starting index in playlist (default: 1)
+
+```--streams, -s``` 	- number of download streams (default: 1)
 
 
 
@@ -19,8 +21,8 @@ node app.js url [options]
 
 ```
 # to download all videos in playlist use:
-node app.js https://www.youtube.com/playlist?list=PLCAM4-OTb6rm7Ef6yeXlk8829Mj22HalZ --folder=./movies/
+node app.js https://www.youtube.com/playlist?list=PLCAM4-OTb6rm7Ef6yeXlk8829Mj22HalZ --dst=./movies/
 
-# this playlist contains 44 videos. To download 42-44 videos use:
-node app.js https://www.youtube.com/playlist?list=PLCAM4-OTb6rm7Ef6yeXlk8829Mj22HalZ --folder=./movies/ -s 42
+# this playlist contains 43 videos. To download videos #20-#30 use:
+node app.js https://www.youtube.com/playlist?list=PLCAM4-OTb6rm7Ef6yeXlk8829Mj22HalZ --dst=./movies/ -f 20 -l 30
 ```
