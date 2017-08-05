@@ -15,9 +15,15 @@ var downloadVideo = function(params, callback) {
 		.on('finish', callback);
 
 	// test
-	/*setTimeout(function() {
-		callback();
-	}, Math.ceil(Math.random()*30));*/
+	/*
+	setTimeout(function() {
+	callback();
+	}, Math.ceil(Math.random()*30));
+	*/
+}
+
+var filterFileName = function(fileName){
+	return (fileName.replace(/[\\\/\:\*\?\"\<\>\|]+/, "").replace(/\s+/, " "));
 }
 
 var getPlaylist = function(listUrl, params) {
@@ -41,7 +47,7 @@ var getPlaylist = function(listUrl, params) {
 
 						var padLength = String(list.length).length;
 						var index = (Array(padLength).join('0') + (i+1)).slice(-padLength);
-						var name = params.folder + '/' + index + '. ' + node.children[0].raw.trim() + '.flv';
+						var name = params.folder + '/' + index + '. ' + filterFileName(node.children[0].raw.trim()) + '.flv';
 
 						videoList.push({
 							url: url,
