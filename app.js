@@ -20,6 +20,11 @@ var downloadVideo = function(params, callback) {
 	}, Math.ceil(Math.random()*30));*/
 }
 
+var normalizeFileName = function(fileName){
+	return fileName.replace(/[\\\/\:\*\?\"\<\>\|]+/g, "")
+	               .replace(/\s+/g, " ");
+}
+
 var getPlaylist = function(listUrl, params) {
 	request.get(listUrl, function(err, res, body) {
 		if (err) {
@@ -41,7 +46,7 @@ var getPlaylist = function(listUrl, params) {
 
 						var padLength = String(list.length).length;
 						var index = (Array(padLength).join('0') + (i+1)).slice(-padLength);
-						var name = params.folder + '/' + index + '. ' + node.children[0].raw.trim() + '.flv';
+						var name = params.folder + '/' + index + '. ' + normalizeFileName(node.children[0].raw.trim()) + '.flv';
 
 						videoList.push({
 							url: url,
